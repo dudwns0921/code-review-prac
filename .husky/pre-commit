@@ -1,0 +1,50 @@
+#!/bin/sh
+
+echo "🤖 Claude가 staged 변경사항을 리뷰 중..."
+
+# staged 파일 확인
+STAGED_FILES=$(git diff --cached --name-only)
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "변경사항이 없습니다."
+  exit 0
+fi
+
+echo "📝 변경된 파일들:"
+echo "$STAGED_FILES"
+echo ""
+
+# Claude Code로 리뷰
+REVIEW_OUTPUT=$(git diff --cached | claude-code "
+커밋 전 코드 리뷰를 해주세요:
+1. 치명적인 버그나 에러
+2. 보안 이슈
+3. 명백한 베스트 프랙티스 위반
+
+심각한 이슈만 간단히 지적해주세요. 사소한 스타일은 무시하세요.
+이슈가 없으면 'LGTM'이라고만 답해주세요.
+" 2>&1)
+
+echo "$REVIEW_OUTPUT"
+
+# LGTM이 아니면 사용자에게 확인
+if echo "$REVIEW_OUTPUT" | grep -qi "LGTM"; then
+  echo "✅ 리뷰 통과!"
+  exit 0
+else
+  echo ""
+  echo "⚠️  Claude가 이슈를 발견했습니다."
+  echo "그래도 커밋하시겠습니까? (y/n)"
+  
+  # 사용자 입력 대기 (CI 환경에서는 자동 통과)
+  if [ -t 0 ]; then
+    read -r response
+    if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+      echo "❌ 커밋 취소됨"
+      exit 1
+    fi
+  fi
+  
+  echo "⚠️  경고를 무시하고 커밋합니다."
+  exit 0
+fi
