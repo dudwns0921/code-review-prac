@@ -28,24 +28,28 @@ REVIEW_OUTPUT=$(git diff --cached | claude "
 
 echo "$REVIEW_OUTPUT"
 
-# LGTM이 아니면 사용자에게 확인
+# 리뷰 결과에 따라 메시지 출력
 if echo "$REVIEW_OUTPUT" | grep -qi "LGTM"; then
   echo "✅ 리뷰 통과!"
-  exit 0
+  PROMPT_MESSAGE="커밋을 진행하시겠습니까? (y/n)"
 else
   echo ""
   echo "⚠️  Claude가 이슈를 발견했습니다."
-  echo "그래도 커밋하시겠습니까? (y/n)"
-  
-  # 사용자 입력 대기 (CI 환경에서는 자동 통과)
-  if [ -t 0 ]; then
-    read -r response
-    if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
-      echo "❌ 커밋 취소됨"
-      exit 1
-    fi
-  fi
-  
-  echo "⚠️  경고를 무시하고 커밋합니다."
-  exit 0
+  PROMPT_MESSAGE="그래도 커밋하시겠습니까? (y/n)"
 fi
+
+# 사용자에게 커밋 진행 여부 확인
+echo ""
+echo "$PROMPT_MESSAGE"
+
+# 사용자 입력 대기 (CI 환경에서는 자동 통과)
+if [ -t 0 ]; then
+  read -r response
+  if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+    echo "❌ 커밋 취소됨"
+    exit 1
+  fi
+fi
+
+echo "✓ 커밋을 진행합니다."
+exit 0
