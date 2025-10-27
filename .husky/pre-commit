@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# 현재 브랜치 확인
+CURRENT_BRANCH=$(git branch --show-current)
+
+# claude-review 브랜치가 아니면 스킵
+if [ "$CURRENT_BRANCH" != "claude-review" ]; then
+  exit 0
+fi
+
 echo "🤖 Claude가 staged 변경사항을 리뷰 중..."
 
 # staged 파일 확인
