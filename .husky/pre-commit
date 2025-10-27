@@ -42,13 +42,13 @@ fi
 echo ""
 echo "$PROMPT_MESSAGE"
 
-# 사용자 입력 대기 (CI 환경에서는 자동 통과)
-if [ -t 0 ]; then
-  read -r response
-  if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
-    echo "❌ 커밋 취소됨"
-    exit 1
-  fi
+# tty에서 직접 입력받기
+exec < /dev/tty
+read -r response
+
+if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+  echo "❌ 커밋 취소됨"
+  exit 1
 fi
 
 echo "✓ 커밋을 진행합니다."
