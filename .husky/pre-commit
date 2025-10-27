@@ -15,7 +15,7 @@ echo "$STAGED_FILES"
 echo ""
 
 # Claude Code로 리뷰
-REVIEW_OUTPUT=$(git diff --cached | claude-code "
+REVIEW_OUTPUT=$(git diff --cached | claude "
 커밋 전 코드 리뷰를 해주세요:
 1. 치명적인 버그나 에러
 2. 보안 이슈
